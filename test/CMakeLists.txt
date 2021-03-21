@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
 
-project(SRToolsTests LANGUAGES CXX)
+set(TESTS_NAME UnitTests)
+
+project(${TESTS_NAME} LANGUAGES CXX)
 
 # ---- Options ----
 
@@ -15,25 +17,25 @@ CPMAddPackage("gh:onqtam/doctest#2.4.5")
 CPMAddPackage("gh:TheLartians/Format.cmake@1.7.0")
 
 if(TEST_INSTALLED_VERSION)
-  find_package(SRTools REQUIRED)
+  find_package(${LIBRARY_NAME} REQUIRED)
 else()
-  CPMAddPackage(NAME SRTools SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/..)
+  CPMAddPackage(NAME ${LIBRARY_NAME} SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/..)
 endif()
 
 # ---- Create binary ----
 
 file(GLOB sources CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/source/*.cpp)
-add_executable(SRToolsTests ${sources})
-target_link_libraries(SRToolsTests doctest::doctest SRTools::SRTools)
-set_target_properties(SRToolsTests PROPERTIES CXX_STANDARD 17)
+add_executable(${TESTS_NAME} ${sources})
+target_link_libraries(${TESTS_NAME} doctest::doctest ${LIBRARY_NAME}::${LIBRARY_NAME})
+set_target_properties(${TESTS_NAME} PROPERTIES CXX_STANDARD 17)
 
 # enable compiler warnings
 if(NOT TEST_INSTALLED_VERSION)
   if(CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR CMAKE_CXX_COMPILER_ID MATCHES "GNU")
-    target_compile_options(SRTools PUBLIC -Wall -Wpedantic -Wextra -Werror)
+    target_compile_options(${LIBRARY_NAME} PUBLIC -Wall -Wpedantic -Wextra -Werror)
   elseif(MSVC)
-    target_compile_options(SRTools PUBLIC /W4 /WX)
-    target_compile_definitions(SRToolsTests PUBLIC DOCTEST_CONFIG_USE_STD_HEADERS)
+    target_compile_options(${LIBRARY_NAME} PUBLIC /W4 /WX)
+    target_compile_definitions(${TESTS_NAME} PUBLIC DOCTEST_CONFIG_USE_STD_HEADERS)
   endif()
 endif()
 
@@ -45,11 +47,11 @@ enable_testing()
 # testing frameworks add the tests target instead: add_test(NAME greeterTests COMMAND GreeterTests)
 
 include(${doctest_SOURCE_DIR}/scripts/cmake/doctest.cmake)
-doctest_discover_tests(SRToolsTests)
+doctest_discover_tests(${TESTS_NAME})
 
 # ---- code coverage ----
 
 if(ENABLE_TEST_COVERAGE)
-  target_compile_options(SRTools PUBLIC -O0 -g -fprofile-arcs -ftest-coverage)
-  target_link_options(SRTools PUBLIC -fprofile-arcs -ftest-coverage)
+  target_compile_options(${LIBRARY_NAME} PUBLIC -O0 -g -fprofile-arcs -ftest-coverage)
+  target_link_options(${LIBRARY_NAME} PUBLIC -fprofile-arcs -ftest-coverage)
 endif()
